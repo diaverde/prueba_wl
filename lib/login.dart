@@ -1,11 +1,14 @@
 // ---------------------------------------------------------------------
-// -----------------------------Inicio----------------------------------
+// -------------------------Inicio de sesión----------------------------
 // ---------------------------------------------------------------------
 
 import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+
+import 'package:prueba_wl/provider/user.dart';
 
 /// Clase principal
 class LoginPage extends StatelessWidget {
@@ -15,7 +18,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text('Inicio de sesión'),
+          title: const Text('Prueba WL'),
         ),
         body: LoginPageDetails(),
       );
@@ -39,6 +42,9 @@ class LoginPageDetails extends StatelessWidget {
   // Método para crear el formulario
   @override
   Widget build(BuildContext context) {
+    // Capturar información de usuario
+    final user = context.watch<UserModel>();
+
     return ListView(
       children: [
         // Formulario
@@ -90,7 +96,7 @@ class LoginPageDetails extends StatelessWidget {
                         return null;
                       },
                       onChanged: (value) {
-                        //user.userName = value.toLowerCase().trim();
+                        user.loginUserName = value.toLowerCase().trim();
                       },
                     ),
                   )
@@ -113,7 +119,7 @@ class LoginPageDetails extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: TextField(
+                    child: TextFormField(
                       obscureText: true,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -122,8 +128,14 @@ class LoginPageDetails extends StatelessWidget {
                       inputFormatters: [
                         FilteringTextInputFormatter.deny(RegExp('[\n\t\r]'))
                       ],
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Ingrese contraseña';
+                        }
+                        return null;
+                      },
                       onChanged: (value) {
-                        //user.password = value;
+                        user.loginPassword = value;
                       },
                     ),
                   ),
@@ -136,15 +148,16 @@ class LoginPageDetails extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    primary: Theme.of(context).highlightColor,
-                  ),
                   onPressed: () async {
                     // Validar
                     if (_formKey.currentState!.validate()) {
                       FocusScope.of(context).unfocus();
-                      //print(jsonEncode(loginUser));
-                      //await user.loadUser(jsonEncode(loginUser));
+                      String userLoginData = '"data": {'
+                          '"nombreUsuario": "${user.loginUserName}",'
+                          '"clave": "${user.loginPassword}",'
+                          '}}';
+                      //print(userLoginData);
+                      await user.loadUser(userLoginData);
                     }
                   },
                   child: const Text('Ingresar'),
@@ -162,7 +175,7 @@ class LoginPageDetails extends StatelessWidget {
             Container(
               constraints: const BoxConstraints(maxWidth: 500),
               alignment: Alignment.centerLeft,
-              margin: const EdgeInsets.only(top: 30),
+              margin: const EdgeInsets.only(top: 20),
               padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
               child: const Text(
                 'O utilice sus credenciales:',
@@ -170,38 +183,87 @@ class LoginPageDetails extends StatelessWidget {
               ),
             ),
             Container(
-              constraints: const BoxConstraints(maxWidth: 500),
+              constraints: const BoxConstraints(maxWidth: 200),
               alignment: Alignment.center,
-              margin: const EdgeInsets.only(top: 30),
-              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+              margin: const EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
               child: SignInButton(
                 Buttons.Google,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                text: "Iniciar sesión con Google",
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                text: "Iniciar sesión\ncon Google",
                 onPressed: () {},
               ),
             ),
             Container(
-              constraints: const BoxConstraints(maxWidth: 500),
+              constraints: const BoxConstraints(maxWidth: 200),
               alignment: Alignment.center,
-              margin: const EdgeInsets.only(top: 30),
-              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+              margin: const EdgeInsets.only(top: 20),
+              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
               child: SignInButton(
                 Buttons.Facebook,
-                padding: const EdgeInsets.all(20),
-                text: "Iniciar sesión con Facebook",
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                text: "Iniciar sesión\ncon Facebook",
                 onPressed: () {},
               ),
             ),
             // Mensajes de inicio de sesión
             Container(
+              margin: const EdgeInsets.only(top: 30),
               padding: const EdgeInsets.symmetric(vertical: 30),
-              child: Container(),
+              child: const Session(),
             ),
           ],
         ),
       ],
     );
+  }
+}
+
+/// Clase para procesar la sesión
+class Session extends StatelessWidget {
+  ///  Class Key
+  const Session({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Capturar usuario
+    final user = context.watch<UserModel>();
+
+    switch (user.userStatus) {
+      case UserStatus.idle:
+        return Container();
+      case UserStatus.loading:
+        return const Center(child: CircularProgressIndicator());
+      case UserStatus.error:
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                'Error de ingreso\n',
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                'Intente de nuevo más tarde o \n'
+                'contacte al administrador del sitio.',
+                textAlign: TextAlign.center,
+              )
+            ],
+          ),
+        );
+      case UserStatus.loaded:
+        // Pequeño delay
+        _waitAndMove(context);
+        user.userStatus = UserStatus.idle;
+        return const Center(child: Text('Cargando página inicial...'));
+    }
+  }
+
+  // Método para pasar a la siguiente página tras un delay
+  Future _waitAndMove(BuildContext context) async {
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    await Navigator.pushNamed(context, '/home');
   }
 }
