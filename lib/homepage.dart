@@ -104,46 +104,10 @@ class SpotifyDetails extends StatefulWidget {
 }
 
 class _SpotifyDetailsState extends State<SpotifyDetails> {
-  List<String> countries = ['Colombia', 'Australia'];
-  String? _selectedCountry;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     // Capturar modelo de Spotify
     final spotify = context.watch<SpotifyModel>();
-
-    List<Widget> showCategories() {
-      List<Widget> allData = <Widget>[];
-      for (final item in spotify.listOfCategories) {
-        Widget _singleCategory = Container(
-          alignment: Alignment.bottomCenter,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey, width: 0.5),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          child: Column(
-            children: [
-              Text("Id: " + item.id!),
-              Text("Nombre: " + item.name!),
-            ],
-          ),
-        );
-        allData.add(_singleCategory);
-      }
-      return allData;
-    }
 
     switch (spotify.sessionStatus) {
       case LoadStatus.idle:
@@ -181,22 +145,10 @@ class _SpotifyDetailsState extends State<SpotifyDetails> {
       case LoadStatus.loaded:
         return Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: Text(
-                'Ver categorías:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                textAlign: TextAlign.left,
-              ),
-            ),
             // Seleccionar país
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 0.5),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -219,19 +171,19 @@ class _SpotifyDetailsState extends State<SpotifyDetails> {
                     ),
                     child: DropdownButton<String>(
                       isExpanded: true,
-                      value: _selectedCountry,
+                      value: spotify.selectedCountry.isEmpty
+                          ? null
+                          : spotify.selectedCountry,
                       icon:
                           const Icon(Icons.arrow_downward, color: Colors.brown),
                       elevation: 16,
                       style: const TextStyle(fontSize: 14, color: Colors.brown),
                       onChanged: (newValue) {
                         setState(() {
-                          _selectedCountry = newValue;
-                          final _countryCode = newValue!.substring(0, 2);
-                          spotify.getCategories(_countryCode);
+                          spotify.selectedCountry = newValue!;
                         });
                       },
-                      items: countries
+                      items: spotify.countries
                           .map<DropdownMenuItem<String>>((value) =>
                               DropdownMenuItem<String>(
                                   value: value, child: Text(value)))
@@ -241,10 +193,115 @@ class _SpotifyDetailsState extends State<SpotifyDetails> {
                 ],
               ),
             ),
-            // Datos
-            Center(child: Column(children: showCategories())),
+            // Ver categorías
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 0.5),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      'Categorías más populares',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.left,
+                      softWrap: true,
+                    ),
+                  ),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: spotify.selectedCountry.isNotEmpty
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).disabledColor,
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      onPressed: () {
+                        if (spotify.selectedCountry.isNotEmpty) {
+                          final _countryCode = spotify.selectedCountry
+                              .substring(0, 2)
+                              .toUpperCase();
+                          spotify.getCategories(_countryCode);
+                          Navigator.pushNamed(context, '/categories');
+                        } else {
+                          showSnackbar(
+                              'Seleccione un país para habilitar esta opción',
+                              context);
+                        }
+                      },
+                      child: const Text('Mostrar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Ver últimos lanzamientos
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 0.5),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      'Últimos lanzamientos',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.left,
+                      softWrap: true,
+                    ),
+                  ),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        primary: spotify.selectedCountry.isNotEmpty
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).disabledColor,
+                        padding: const EdgeInsets.all(10),
+                      ),
+                      onPressed: () {
+                        if (spotify.selectedCountry.isNotEmpty) {
+                          final _countryCode = spotify.selectedCountry
+                              .substring(0, 2)
+                              .toUpperCase();
+                          //spotify.getCategories(_countryCode);
+                          //Navigator.pushNamed(context, '/categories');
+                        } else {
+                          showSnackbar(
+                              'Seleccione un país para habilitar esta opción',
+                              context);
+                        }
+                      },
+                      child: const Text('Mostrar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         );
     }
+  }
+
+  /// Método para mostrar mensajes al usuario como snackBar
+  void showSnackbar(String toShow, BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(toShow)));
   }
 }

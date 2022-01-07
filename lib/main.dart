@@ -4,13 +4,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:prueba_wl/config.dart';
 
 import 'package:prueba_wl/login.dart';
 import 'package:prueba_wl/homepage.dart';
+import 'package:prueba_wl/show_categories.dart';
+import 'package:prueba_wl/show_playlists.dart';
+import 'package:prueba_wl/show_tracks.dart';
 import 'package:prueba_wl/provider/spotify.dart';
 import 'package:prueba_wl/provider/user.dart';
 
-void main() {
+Future<void> main() async {
+  // Cargar archivo de configuración
+  WidgetsFlutterBinding.ensureInitialized();
+  await Config.initialize();
   runApp(const MyApp());
 }
 
@@ -43,6 +50,9 @@ class MyApp extends StatelessWidget {
         routes: <String, WidgetBuilder>{
           '/': (context) => const LoginPage(),
           '/home': (context) => const HomePage(),
+          '/categories': (context) => const CategoryPage(),
+          '/playlists': (context) => const PlaylistPage(),
+          '/tracks': (context) => const TrackPage(),
         },
       ),
     );

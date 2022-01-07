@@ -15,7 +15,7 @@ class ApplicationBar {
     return PreferredSize(
       preferredSize: const Size.fromHeight(56),
       child: AppBar(
-        title: const Text('Página principal'),
+        title: const Text('Prueba WL'),
         leading: GestureDetector(
           onTap: () async {
             if (leavingBlock) {

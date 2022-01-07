@@ -32,3 +32,4 @@ flutter:
   assets:
     - images/default-welcomer.png
     - images/kenny.png
+    - config/
