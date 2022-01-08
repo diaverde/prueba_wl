@@ -75,8 +75,8 @@ class TrackPageDetails extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    //spotify.getCategories(_countryCode);
-                    //Navigator.pushNamed(context, '/categories');
+                    spotify.getArtist(spotify.listOfTracks[i].artistID![0]);
+                    Navigator.pushNamed(context, '/artist');
                   },
                   child: const Text('Ver detalles'),
                 ),

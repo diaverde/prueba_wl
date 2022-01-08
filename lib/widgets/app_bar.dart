@@ -182,7 +182,7 @@ Future<void> resetVariables(BuildContext context) async {
   // Capturar usuario
   final user = context.read<UserModel>();
   // Capturar modelo de Spotify
-  final spotify = context.watch<SpotifyModel>();
+  final spotify = context.read<SpotifyModel>();
 
   await Future<void>.delayed(const Duration(milliseconds: 500));
 

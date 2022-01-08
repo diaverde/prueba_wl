@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:prueba_wl/config.dart';
+import 'package:prueba_wl/models/album.dart';
+import 'package:prueba_wl/models/artist.dart';
 import 'package:prueba_wl/models/category.dart';
 import 'package:prueba_wl/models/playlist.dart';
 import 'package:prueba_wl/models/track.dart';
@@ -46,6 +48,19 @@ class SpotifyModel extends ChangeNotifier {
   // Lista de reproducción seleccionada
   String selectedPlaylist = '';
 
+  // Artista seleccionado
+  //SpArtist selectedArtist = SpArtist(genres: [], images: []);
+  SpArtist selectedArtist = SpArtist(
+    id: '1',
+    name: 'Taylor Swift',
+    followers: 1000,
+    genres: ['Pop', 'Country', 'Metal'],
+    images: [
+      'https://www.clarin.com/img/2021/07/20/taylor-swift-se-propuso-defender___o62tGE1nY_340x340__1.jpg'
+    ],
+    artistURL: '#',
+  );
+
   /// Lista de categorías cargadas
   List<SpCategory> listOfCategories = <SpCategory>[
     SpCategory(id: 'rock', name: 'Rock'),
@@ -75,7 +90,7 @@ class SpotifyModel extends ChangeNotifier {
         tracksURL: '#'),
   ];
 
-  /// Lista de canciones
+  /// Lista de canciones (de playlist)
   List<SpTrack> listOfTracks = <SpTrack>[
     SpTrack(
         id: '1',
@@ -103,6 +118,62 @@ class SpotifyModel extends ChangeNotifier {
         trackURL: '#'),
   ];
 
+  /// Lista de álbumes
+  List<SpAlbum> listOfAlbums = <SpAlbum>[
+    SpAlbum(
+        id: '1',
+        name: 'Darkness',
+        artistID: ['1'],
+        artist: ['Iron Maiden'],
+        releaseDate: '2010-02-28',
+        totalTracks: 10,
+        albumURL: '#'),
+    SpAlbum(
+        id: '2',
+        name: 'Licht',
+        artistID: ['1', '2'],
+        artist: ['Iron Maiden, Megadeth'],
+        releaseDate: '2011-06-28',
+        totalTracks: 11,
+        albumURL: '#'),
+    SpAlbum(
+        id: '3',
+        name: 'Sadness',
+        artistID: ['1'],
+        artist: ['Iron Maiden'],
+        releaseDate: '2020-02-28',
+        totalTracks: 16,
+        albumURL: '#'),
+  ];
+
+  /// Lista de canciones populares (de artista)
+  List<SpTrack> listOfTopTracks = <SpTrack>[
+    SpTrack(
+        id: '1',
+        name: 'Doom',
+        albumID: '1',
+        album: '1994',
+        artistID: ['1'],
+        artist: ['Damn'],
+        trackURL: '#'),
+    SpTrack(
+        id: '2',
+        name: 'Ding',
+        albumID: '1',
+        album: '1994',
+        artistID: ['1', '4'],
+        artist: ['Damn', 'Dirnt'],
+        trackURL: '#'),
+    SpTrack(
+        id: '3',
+        name: 'Blank Space',
+        albumID: '2',
+        album: 'Boosting 1994',
+        artistID: ['1'],
+        artist: ['Damn'],
+        trackURL: '#'),
+  ];
+
   /// Reiniciar todas las variables de este modelo
   void resetAll() {
     spToken = '';
@@ -110,9 +181,12 @@ class SpotifyModel extends ChangeNotifier {
     selectedCountry = '';
     selectedCategory = '';
     selectedPlaylist = '';
+    selectedArtist = SpArtist(genres: [], images: []);
     listOfCategories.clear();
     listOfPlaylists.clear();
     listOfTracks.clear();
+    listOfAlbums.clear();
+    listOfTopTracks.clear();
     notifyListeners();
   }
 
@@ -157,7 +231,6 @@ class SpotifyModel extends ChangeNotifier {
 
   /// Función para obtener categorías
   Future<bool> getCategories(String country) async {
-    print(spToken);
     Map<String, String> headers = {
       'Content-type': 'application/json; charset=UTF-8',
       'Authorization': 'Bearer ' + spToken
@@ -166,7 +239,7 @@ class SpotifyModel extends ChangeNotifier {
       final response = await http.get(
           Uri.parse('${Config.categoriesURL}?country=$country'),
           headers: headers);
-      print(response.body);
+      //print(response.body);
 
       if (response.statusCode == 200) {
         final dynamic temp = json.decode(response.body);
@@ -196,7 +269,7 @@ class SpotifyModel extends ChangeNotifier {
         '${Config.playlistsURL.replaceAll('--', categoryID)}?country=$country';
     try {
       final response = await http.get(Uri.parse(_fixedURL), headers: headers);
-      print(response.body);
+      //print(response.body);
 
       if (response.statusCode == 200) {
         final dynamic temp = json.decode(response.body);
@@ -225,7 +298,7 @@ class SpotifyModel extends ChangeNotifier {
     final _fixedURL = Config.tracksURL.replaceAll('--', playlistID);
     try {
       final response = await http.get(Uri.parse(_fixedURL), headers: headers);
-      print(response.body);
+      //print(response.body);
 
       if (response.statusCode == 200) {
         final dynamic temp = json.decode(response.body);
@@ -233,6 +306,90 @@ class SpotifyModel extends ChangeNotifier {
         listOfTracks.clear();
         for (final item in myList) {
           listOfTracks.add(SpTrack.fromJson(item['track']));
+        }
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      //print(e);
+      return false;
+    }
+  }
+
+  /// Función para obtener detalles de un artista
+  Future<bool> getArtist(String artistID) async {
+    Map<String, String> headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ' + spToken
+    };
+    final _fixedURL = '${Config.artistURL}/$artistID';
+    try {
+      final response = await http.get(Uri.parse(_fixedURL), headers: headers);
+      //print(response.body);
+
+      if (response.statusCode == 200) {
+        final dynamic temp = json.decode(response.body);
+        selectedArtist = SpArtist.fromJson(temp);
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      //print(e);
+      return false;
+    }
+  }
+
+  /// Función para obtener álbumes de un artista
+  Future<bool> getAlbums(String artistID) async {
+    Map<String, String> headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ' + spToken
+    };
+    final _fixedURL = Config.albumsURL.replaceAll('--', artistID);
+    try {
+      final response = await http.get(Uri.parse(_fixedURL), headers: headers);
+      //print(response.body);
+
+      if (response.statusCode == 200) {
+        final dynamic temp = json.decode(response.body);
+        final myList = temp['items'];
+        listOfAlbums.clear();
+        for (final item in myList) {
+          listOfAlbums.add(SpAlbum.fromJson(item));
+        }
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      //print(e);
+      return false;
+    }
+  }
+
+  /// Función para obtener pistas populares de un artista
+  Future<bool> getTopTracks(String artistID, String country) async {
+    Map<String, String> headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ' + spToken
+    };
+    final _fixedURL =
+        '${Config.topTracksURL.replaceAll('--', artistID)}?market=$country';
+    try {
+      final response = await http.get(Uri.parse(_fixedURL), headers: headers);
+      //print(response.body);
+
+      if (response.statusCode == 200) {
+        final dynamic temp = json.decode(response.body);
+        final myList = temp['tracks'];
+        listOfTopTracks.clear();
+        for (final item in myList) {
+          listOfTopTracks.add(SpTrack.fromJson(item));
         }
         notifyListeners();
         return true;
