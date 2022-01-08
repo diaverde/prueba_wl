@@ -24,6 +24,64 @@ class TrackPage extends StatelessWidget {
 class TrackPageDetails extends StatelessWidget {
   const TrackPageDetails({Key? key}) : super(key: key);
 
+  // Método para seleccionar artista para ver detalles (si hay varios)
+  void _selectArtist(
+      BuildContext context, List<String> artists, List<String> artistIDs) {
+    int _selectedValue = 0;
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        // Capturar modelo de Spotify
+        final spotify = context.watch<SpotifyModel>();
+        return AlertDialog(
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Seleccione artista para ver detalles',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Column(
+                  children: List<Widget>.generate(
+                    artists.length,
+                    (int i) => ListTile(
+                      dense: true,
+                      title: Text(artists[i]),
+                      leading: Radio(
+                        value: i,
+                        groupValue: _selectedValue,
+                        onChanged: (value) {
+                          final _newArtist = artists[value as int];
+                          _selectedValue = artists.indexOf(_newArtist);
+                          spotify.setNewArtistName(_newArtist);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                spotify.getArtist(artistIDs[_selectedValue]);
+                Navigator.pushNamed(context, '/artist');
+              },
+              child: const Text('Aceptar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Capturar modelo de Spotify
@@ -75,8 +133,13 @@ class TrackPageDetails extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    spotify.getArtist(spotify.listOfTracks[i].artistID![0]);
-                    Navigator.pushNamed(context, '/artist');
+                    if (spotify.listOfTracks[i].artistID!.length > 1) {
+                      _selectArtist(context, spotify.listOfTracks[i].artist!,
+                          spotify.listOfTracks[i].artistID!);
+                    } else {
+                      spotify.getArtist(spotify.listOfTracks[i].artistID![0]);
+                      Navigator.pushNamed(context, '/artist');
+                    }
                   },
                   child: const Text('Ver detalles'),
                 ),

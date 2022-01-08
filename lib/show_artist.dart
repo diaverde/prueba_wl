@@ -153,21 +153,25 @@ class ArtistPageDetails extends StatelessWidget {
               ),
             ),
             Center(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
-                child: ElevatedButton(
-                  onPressed: () {
-                    final _countryCode =
-                        spotify.selectedCountry.substring(0, 2).toUpperCase();
-                    spotify.getTopTracks(
-                        spotify.selectedArtist.id!, _countryCode);
-                    Navigator.pushNamed(context, '/top-tracks');
-                  },
-                  child: const Text('Ver canciones\nmás populares'),
-                ),
-              ),
+              child: spotify.selectedCountry.isNotEmpty
+                  ? Container(
+                      constraints: const BoxConstraints(maxWidth: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 30),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final _countryCode = spotify.selectedCountry
+                              .substring(0, 2)
+                              .toUpperCase();
+                          spotify.getTopTracks(
+                              spotify.selectedArtist.id!, _countryCode);
+                          Navigator.pushNamed(context, '/top-tracks');
+                        },
+                        child: const Text('Ver canciones\nmás populares'),
+                      ),
+                    )
+                  : Container(),
             ),
           ],
         ),

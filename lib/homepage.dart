@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:prueba_wl/provider/spotify.dart';
@@ -104,6 +105,15 @@ class SpotifyDetails extends StatefulWidget {
 }
 
 class _SpotifyDetailsState extends State<SpotifyDetails> {
+  // "Text controller" para búsqueda
+  final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    myController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Capturar modelo de Spotify
@@ -234,8 +244,9 @@ class _SpotifyDetailsState extends State<SpotifyDetails> {
                           Navigator.pushNamed(context, '/categories');
                         } else {
                           showSnackbar(
-                              'Seleccione un país para habilitar esta opción',
-                              context);
+                            'Seleccione un país para habilitar esta opción',
+                            context,
+                          );
                         }
                       },
                       child: const Text('Mostrar'),
@@ -281,15 +292,141 @@ class _SpotifyDetailsState extends State<SpotifyDetails> {
                           final _countryCode = spotify.selectedCountry
                               .substring(0, 2)
                               .toUpperCase();
-                          //spotify.getCategories(_countryCode);
-                          //Navigator.pushNamed(context, '/categories');
+                          spotify.getNewReleases(_countryCode);
+                          Navigator.pushNamed(context, '/new-releases');
                         } else {
                           showSnackbar(
-                              'Seleccione un país para habilitar esta opción',
-                              context);
+                            'Seleccione un país para habilitar esta opción',
+                            context,
+                          );
                         }
                       },
                       child: const Text('Mostrar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Búsqueda
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 0.5),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      'Buscar en Spotify',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.left,
+                      softWrap: true,
+                    ),
+                  ),
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    margin: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('Buscar por:'),
+                        ),
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 200),
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                color: Theme.of(context).primaryColor),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(10)),
+                          ),
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: spotify.selectedSearchType.isEmpty
+                                ? null
+                                : spotify.selectedSearchType,
+                            icon: const Icon(Icons.arrow_downward,
+                                color: Colors.brown),
+                            elevation: 16,
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.brown),
+                            onChanged: (newValue) {
+                              setState(() {
+                                spotify.selectedSearchType = newValue!;
+                              });
+                            },
+                            items: spotify.searchTypes.keys
+                                .map<DropdownMenuItem<String>>((value) =>
+                                    DropdownMenuItem<String>(
+                                        value: value, child: Text(value)))
+                                .toList(),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 10),
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Theme.of(context).primaryColor),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    color: Theme.of(context).primaryColor),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 5),
+                              hintText: 'Ingrese texto de búsqueda',
+                              hintStyle: const TextStyle(fontSize: 12),
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.deny(
+                                  RegExp('[\n\t\r]'))
+                            ],
+                            maxLength: 30,
+                            controller: myController,
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.centerRight,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              FocusScope.of(context).unfocus();
+                              if (myController.text.isNotEmpty &&
+                                  spotify.selectedSearchType.isNotEmpty) {
+                                spotify.searchStatus = LoadStatus.idle;
+                                spotify.searchText = myController.text;
+                                spotify.loadSearchResults(
+                                    spotify.searchTypes[
+                                        spotify.selectedSearchType]!,
+                                    spotify.searchText);
+                                Navigator.pushNamed(context, '/search-results');
+                              } else {
+                                showSnackbar(
+                                  'Ingrese texto para buscar y filtro adecuado',
+                                  context,
+                                );
+                              }
+                            },
+                            child: const Text('Buscar'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

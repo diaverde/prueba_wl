@@ -33,6 +33,14 @@ class SpotifyModel extends ChangeNotifier {
   /// Lista de países a considerar
   final List<String> countries = ['Colombia', 'Australia'];
 
+  /// Lista de filtros de búsqueda
+  final Map<String, String> searchTypes = {
+    'Álbum': 'album',
+    'Artista': 'artist',
+    'Playlist': 'playlist',
+    'Canción': 'track',
+  };
+
   /// Token de Spotify
   String spToken = '';
 
@@ -48,131 +56,41 @@ class SpotifyModel extends ChangeNotifier {
   // Lista de reproducción seleccionada
   String selectedPlaylist = '';
 
+  // Nombre de artista seleccionado
+  String selectedArtistName = '';
+
+  // Filtro de búsqueda seleccionado
+  String selectedSearchType = '';
+
+  // Texto de búsqueda ingresado
+  String searchText = '';
+
+  /// Estado actual de búsqueda
+  LoadStatus searchStatus = LoadStatus.idle;
+
   // Artista seleccionado
-  //SpArtist selectedArtist = SpArtist(genres: [], images: []);
-  SpArtist selectedArtist = SpArtist(
-    id: '1',
-    name: 'Taylor Swift',
-    followers: 1000,
-    genres: ['Pop', 'Country', 'Metal'],
-    images: [
-      'https://www.clarin.com/img/2021/07/20/taylor-swift-se-propuso-defender___o62tGE1nY_340x340__1.jpg'
-    ],
-    artistURL: '#',
-  );
+  SpArtist selectedArtist = SpArtist(genres: [], images: []);
 
   /// Lista de categorías cargadas
-  List<SpCategory> listOfCategories = <SpCategory>[
-    SpCategory(id: 'rock', name: 'Rock'),
-    SpCategory(id: 'rap', name: 'Rap'),
-    SpCategory(id: 'salsa', name: 'Salsa'),
-  ];
+  List<SpCategory> listOfCategories = <SpCategory>[];
 
   /// Lista de playlists
-  List<SpPlaylist> listOfPlaylists = <SpPlaylist>[
-    SpPlaylist(
-        id: '1',
-        name: 'darkie',
-        description: 'Oscura',
-        numberOfTracks: 3,
-        tracksURL: '#'),
-    SpPlaylist(
-        id: '2',
-        name: 'punkie',
-        description: 'Lo mejor del punk',
-        numberOfTracks: 6,
-        tracksURL: '#'),
-    SpPlaylist(
-        id: '3',
-        name: 'oldie',
-        description: 'Viejos clásicos',
-        numberOfTracks: 7,
-        tracksURL: '#'),
-  ];
+  List<SpPlaylist> listOfPlaylists = <SpPlaylist>[];
 
   /// Lista de canciones (de playlist)
-  List<SpTrack> listOfTracks = <SpTrack>[
-    SpTrack(
-        id: '1',
-        name: 'Doom',
-        albumID: '1',
-        album: '1994',
-        artistID: ['1'],
-        artist: ['Damn'],
-        trackURL: '#'),
-    SpTrack(
-        id: '2',
-        name: 'Ding',
-        albumID: '1',
-        album: '1994',
-        artistID: ['1', '4'],
-        artist: ['Damn', 'Dirnt'],
-        trackURL: '#'),
-    SpTrack(
-        id: '3',
-        name: 'Blank Space',
-        albumID: '2',
-        album: 'Boosting 1994',
-        artistID: ['2'],
-        artist: ['Taylor'],
-        trackURL: '#'),
-  ];
+  List<SpTrack> listOfTracks = <SpTrack>[];
 
-  /// Lista de álbumes
-  List<SpAlbum> listOfAlbums = <SpAlbum>[
-    SpAlbum(
-        id: '1',
-        name: 'Darkness',
-        artistID: ['1'],
-        artist: ['Iron Maiden'],
-        releaseDate: '2010-02-28',
-        totalTracks: 10,
-        albumURL: '#'),
-    SpAlbum(
-        id: '2',
-        name: 'Licht',
-        artistID: ['1', '2'],
-        artist: ['Iron Maiden, Megadeth'],
-        releaseDate: '2011-06-28',
-        totalTracks: 11,
-        albumURL: '#'),
-    SpAlbum(
-        id: '3',
-        name: 'Sadness',
-        artistID: ['1'],
-        artist: ['Iron Maiden'],
-        releaseDate: '2020-02-28',
-        totalTracks: 16,
-        albumURL: '#'),
-  ];
+  /// Lista de álbumes de un artista
+  List<SpAlbum> listOfAlbums = <SpAlbum>[];
 
   /// Lista de canciones populares (de artista)
-  List<SpTrack> listOfTopTracks = <SpTrack>[
-    SpTrack(
-        id: '1',
-        name: 'Doom',
-        albumID: '1',
-        album: '1994',
-        artistID: ['1'],
-        artist: ['Damn'],
-        trackURL: '#'),
-    SpTrack(
-        id: '2',
-        name: 'Ding',
-        albumID: '1',
-        album: '1994',
-        artistID: ['1', '4'],
-        artist: ['Damn', 'Dirnt'],
-        trackURL: '#'),
-    SpTrack(
-        id: '3',
-        name: 'Blank Space',
-        albumID: '2',
-        album: 'Boosting 1994',
-        artistID: ['1'],
-        artist: ['Damn'],
-        trackURL: '#'),
-  ];
+  List<SpTrack> listOfTopTracks = <SpTrack>[];
+
+  /// Lista de nuevos lanzamients
+  List<SpAlbum> listOfNewReleases = <SpAlbum>[];
+
+  /// Lista de resultados de búsqueda
+  List<dynamic> listOfSearchResults = [];
 
   /// Reiniciar todas las variables de este modelo
   void resetAll() {
@@ -181,12 +99,22 @@ class SpotifyModel extends ChangeNotifier {
     selectedCountry = '';
     selectedCategory = '';
     selectedPlaylist = '';
+    selectedSearchType = '';
+    selectedArtistName = '';
+    searchText = '';
     selectedArtist = SpArtist(genres: [], images: []);
     listOfCategories.clear();
     listOfPlaylists.clear();
     listOfTracks.clear();
     listOfAlbums.clear();
     listOfTopTracks.clear();
+    listOfNewReleases.clear();
+    listOfSearchResults.clear();
+    notifyListeners();
+  }
+
+  void setNewArtistName(String name) {
+    selectedArtistName = name;
     notifyListeners();
   }
 
@@ -214,7 +142,7 @@ class SpotifyModel extends ChangeNotifier {
     try {
       final response = await http.post(Uri.parse(Config.spotifyTokenURL),
           body: bodyContent, headers: headers);
-      print(response.body);
+      //print(response.body);
 
       if (response.statusCode == 200) {
         final dynamic temp = json.decode(response.body);
@@ -392,6 +320,100 @@ class SpotifyModel extends ChangeNotifier {
           listOfTopTracks.add(SpTrack.fromJson(item));
         }
         notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      //print(e);
+      return false;
+    }
+  }
+
+  /// Función para obtener últimos lanzamientos
+  Future<bool> getNewReleases(String country) async {
+    Map<String, String> headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ' + spToken
+    };
+    try {
+      final response = await http.get(
+          Uri.parse('${Config.newReleasesURL}?country=$country'),
+          headers: headers);
+      //print(response.body);
+
+      if (response.statusCode == 200) {
+        final dynamic temp = json.decode(response.body);
+        final myList = temp['albums']['items'];
+        listOfNewReleases.clear();
+        for (final item in myList) {
+          listOfNewReleases.add(SpAlbum.fromJson(item));
+        }
+        notifyListeners();
+        return true;
+      } else {
+        return false;
+      }
+    } on Exception catch (e) {
+      //print(e);
+      return false;
+    }
+  }
+
+  /// Carga de resultados por búsqueda en Spotify
+  Future<void> loadSearchResults(String type, String query) async {
+    searchStatus = LoadStatus.loading;
+    notifyListeners();
+    final futureResult = await getSearchResults(type, query);
+    if (futureResult) {
+      searchStatus = LoadStatus.loaded;
+    } else {
+      searchStatus = LoadStatus.error;
+    }
+    notifyListeners();
+  }
+
+  /// Función para realizar búsquedas
+  Future<bool> getSearchResults(String type, String query) async {
+    Map<String, String> headers = {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer ' + spToken
+    };
+    try {
+      final response = await http.get(
+          Uri.parse('${Config.searchURL}?type=$type&q=$query'),
+          headers: headers);
+      //print(response.body);
+
+      if (response.statusCode == 200) {
+        final dynamic temp = json.decode(response.body);
+        listOfSearchResults.clear();
+        switch (type) {
+          case 'album':
+            final myList = temp['albums']['items'];
+            for (final item in myList) {
+              listOfSearchResults.add(SpAlbum.fromJson(item));
+            }
+            break;
+          case 'artist':
+            final myList = temp['artists']['items'];
+            for (final item in myList) {
+              listOfSearchResults.add(SpArtist.fromJson(item));
+            }
+            break;
+          case 'playlist':
+            final myList = temp['playlists']['items'];
+            for (final item in myList) {
+              listOfSearchResults.add(SpPlaylist.fromJson(item));
+            }
+            break;
+          case 'track':
+            final myList = temp['tracks']['items'];
+            for (final item in myList) {
+              listOfSearchResults.add(SpTrack.fromJson(item));
+            }
+            break;
+        }
         return true;
       } else {
         return false;

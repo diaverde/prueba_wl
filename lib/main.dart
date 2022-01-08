@@ -11,7 +11,9 @@ import 'package:prueba_wl/homepage.dart';
 import 'package:prueba_wl/show_albums.dart';
 import 'package:prueba_wl/show_artist.dart';
 import 'package:prueba_wl/show_categories.dart';
+import 'package:prueba_wl/show_new_releases.dart';
 import 'package:prueba_wl/show_playlists.dart';
+import 'package:prueba_wl/show_search_results.dart';
 import 'package:prueba_wl/show_top_tracks.dart';
 import 'package:prueba_wl/show_tracks.dart';
 import 'package:prueba_wl/provider/spotify.dart';
@@ -49,7 +51,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.purple,
           highlightColor: const Color.fromRGBO(238, 119, 126, 1),
         ),
-        initialRoute: '/',
+        initialRoute: '/home',
         routes: <String, WidgetBuilder>{
           '/': (context) => const LoginPage(),
           '/home': (context) => const HomePage(),
@@ -59,6 +61,8 @@ class MyApp extends StatelessWidget {
           '/artist': (context) => const ArtistPage(),
           '/albums': (context) => const AlbumPage(),
           '/top-tracks': (context) => const TopTrackPage(),
+          '/new-releases': (context) => const NewReleasePage(),
+          '/search-results': (context) => const SearchPage(),
         },
       ),
     );

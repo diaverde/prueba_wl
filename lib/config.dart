@@ -56,6 +56,12 @@ class Config {
   /// URL para obtener canciones Top de artista
   static String get topTracksURL => spotifyEndpoint + 'artists/--/top-tracks';
 
+  /// URL para obtener nuevos lanzamientos
+  static String get newReleasesURL => spotifyEndpoint + 'browse/new-releases';
+
+  /// URL para búsquedas
+  static String get searchURL => spotifyEndpoint + 'search';
+
   /// Datos para Spotify importados de archivo
   static String get clientId => _config['clientID'];
   static String get clientSecret => _config['clientSecret'];
