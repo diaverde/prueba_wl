@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.purple,
           highlightColor: const Color.fromRGBO(238, 119, 126, 1),
         ),
-        initialRoute: '/home',
+        initialRoute: '/',
         routes: <String, WidgetBuilder>{
           '/': (context) => const LoginPage(),
           '/home': (context) => const HomePage(),
