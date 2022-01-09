@@ -6,7 +6,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:prueba_wl/config.dart';
+import 'package:prueba_wl/utils/config.dart';
 import 'package:prueba_wl/models/album.dart';
 import 'package:prueba_wl/models/artist.dart';
 import 'package:prueba_wl/models/category.dart';

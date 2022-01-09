@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:prueba_wl/config.dart';
+import 'package:prueba_wl/utils/config.dart';
 import 'package:prueba_wl/provider/spotify.dart';
 import 'package:prueba_wl/provider/user.dart';
 

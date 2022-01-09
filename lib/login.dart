@@ -2,8 +2,9 @@
 // -------------------------Inicio de sesión----------------------------
 // ---------------------------------------------------------------------
 
-import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -16,12 +17,21 @@ class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
+  Widget build(BuildContext context) {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      Navigator.pushNamed(context, '/home');
+      return Container();
+    } else {
+      return Scaffold(
         appBar: AppBar(
           title: const Text('Prueba WL'),
         ),
         body: LoginPageDetails(),
       );
+    }
+  }
 }
 
 /// Clase para el login
@@ -152,12 +162,8 @@ class LoginPageDetails extends StatelessWidget {
                     // Validar
                     if (_formKey.currentState!.validate()) {
                       FocusScope.of(context).unfocus();
-                      String userLoginData = '"data": {'
-                          '"nombreUsuario": "${user.loginUserName}",'
-                          '"clave": "${user.loginPassword}",'
-                          '}}';
-                      //print(userLoginData);
-                      await user.loadUser(userLoginData);
+                      user.authMethod = AuthenticationMethod.standard;
+                      await user.loadUser();
                     }
                   },
                   child: const Text('Ingresar'),
@@ -192,7 +198,22 @@ class LoginPageDetails extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 text: "Iniciar sesión\ncon Google",
-                onPressed: () {},
+                onPressed: () async {
+                  /*
+                  User? user;
+                  user =
+                      await Authentication.signInWithGoogle(context: context);
+                  print(user);
+                  if (user != null) {
+                    print(user.displayName);
+                    print(user.email);
+                    print(user.emailVerified);
+                    print(user.phoneNumber);
+                  }
+                  */
+                  user.authMethod = AuthenticationMethod.google;
+                  await user.loadUser();
+                },
               ),
             ),
             Container(
@@ -205,7 +226,10 @@ class LoginPageDetails extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 text: "Iniciar sesión\ncon Facebook",
-                onPressed: () {},
+                onPressed: () async {
+                  user.authMethod = AuthenticationMethod.facebook;
+                  await user.loadUser();
+                },
               ),
             ),
             // Mensajes de inicio de sesión
@@ -236,6 +260,23 @@ class Session extends StatelessWidget {
         return Container();
       case UserStatus.loading:
         return const Center(child: CircularProgressIndicator());
+      case UserStatus.unauthorized:
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                'Error de credenciales\n',
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                'Revise usuario y contraseña \n'
+                'e intente nuevamente.',
+                textAlign: TextAlign.center,
+              )
+            ],
+          ),
+        );
       case UserStatus.error:
         return Center(
           child: Column(

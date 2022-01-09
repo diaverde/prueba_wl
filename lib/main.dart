@@ -4,8 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:prueba_wl/config.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+import 'package:prueba_wl/utils/config.dart';
 import 'package:prueba_wl/login.dart';
 import 'package:prueba_wl/homepage.dart';
 import 'package:prueba_wl/show_albums.dart';
@@ -22,7 +23,16 @@ import 'package:prueba_wl/provider/user.dart';
 Future<void> main() async {
   // Cargar archivo de configuración
   WidgetsFlutterBinding.ensureInitialized();
-  await Config.initialize();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: Config.apiKeyFB,
+      appId: Config.appIdFB,
+      messagingSenderId: Config.messagingSenderIdFB,
+      projectId: Config.projectIdFB,
+      authDomain: Config.authDomainFB,
+    ),
+  );
+  //await Config.initialize();
   runApp(const MyApp());
 }
 

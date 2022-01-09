@@ -65,4 +65,12 @@ class Config {
   /// Datos para Spotify importados de archivo
   static String get clientId => _config['clientID'];
   static String get clientSecret => _config['clientSecret'];
+
+  // Credenciales de FireBase
+  static const apiKeyFB = "AIzaSyBUSGJ2j3SiX5SALclTfN2I91B_zQMFL90";
+  static const authDomainFB = "prueba-wl.firebaseapp.com";
+  static const projectIdFB = "prueba-wl";
+  static const storageBucketFB = "prueba-wl.appspot.com";
+  static const messagingSenderIdFB = "240928688210";
+  static const appIdFB = "1:240928688210:web:cedf2b918149547231b78b";
 }

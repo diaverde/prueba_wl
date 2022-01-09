@@ -1,7 +1,7 @@
-/// Clase User
-class User {
+/// Clase AppUser
+class AppUser {
   /// Constructor
-  User({
+  AppUser({
     this.id,
     this.userName,
     this.firstName,
@@ -24,7 +24,7 @@ class User {
   /// Documento de identidad
   String? idNumber;
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
+  factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
         id: json['UID'] as String?,
         userName: json['UserProfileID'] as String?,
         firstName: json['nombre'] as String?,
