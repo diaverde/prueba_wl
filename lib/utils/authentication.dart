@@ -28,23 +28,25 @@ class Authentication {
   // Autenticación con credenciales de Google
   static Future<String> signInWithGoogle() async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    User? user;
 
     if (kIsWeb) {
       GoogleAuthProvider authProvider = GoogleAuthProvider();
 
       try {
-        final UserCredential userCredential =
-            await auth.signInWithPopup(authProvider);
-        user = userCredential.user;
+        await auth.signInWithPopup(authProvider);
+
         return 'Ok';
       } catch (e) {
-        //print(e);
         return 'Error: $e';
       }
     } else {
       final googleSignIn = GoogleSignIn();
-      final googleSignInAccount = await googleSignIn.signIn();
+      GoogleSignInAccount? googleSignInAccount;
+      try {
+        googleSignInAccount = await googleSignIn.signIn();
+      } on Exception catch (e) {
+        return 'Error: $e';
+      }
 
       if (googleSignInAccount != null) {
         final googleSignInAuthentication =
@@ -55,8 +57,7 @@ class Authentication {
         );
 
         try {
-          final userCredential = await auth.signInWithCredential(credential);
-          user = userCredential.user;
+          await auth.signInWithCredential(credential);
           return 'Ok';
         } on FirebaseAuthException catch (e) {
           if (e.code == 'account-exists-with-different-credential') {
@@ -87,36 +88,49 @@ class Authentication {
   }
 
   // Autenticación con credenciales de Facebook
-  static Future<User?> signInWithFacebook() async {
+  static Future<String> signInWithFacebook() async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    User? user;
-    try {
-      final result = await FacebookAuth.instance.login();
-      switch (result.status) {
-        case LoginStatus.success:
-          final facebookCredential =
-              FacebookAuthProvider.credential(result.accessToken!.token);
-          final userCredential =
-              await auth.signInWithCredential(facebookCredential);
-          user = userCredential.user;
-          return user;
-        case LoginStatus.cancelled:
-          print('Canceled');
-          return null;
-        case LoginStatus.failed:
-          print('Failed');
-          return null;
-        default:
-          return null;
+
+    if (kIsWeb) {
+      FacebookAuthProvider facebookProvider = FacebookAuthProvider();
+
+      facebookProvider.addScope('email');
+      facebookProvider.setCustomParameters({
+        'display': 'popup',
+      });
+
+      try {
+        // Once signed in, return the UserCredential
+        await FirebaseAuth.instance.signInWithPopup(facebookProvider);
+        return 'Ok';
+      } on Exception {
+        return 'Error';
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'account-exists-with-different-credential') {
-        return null;
-      } else if (e.code == 'invalid-credential') {
-        return null;
+
+      // Or use signInWithRedirect
+      // return await FirebaseAuth.instance.signInWithRedirect(facebookProvider);
+    } else {
+      try {
+        final result = await FacebookAuth.instance.login();
+
+        switch (result.status) {
+          case LoginStatus.success:
+            final facebookCredential =
+                FacebookAuthProvider.credential(result.accessToken!.token);
+            await auth.signInWithCredential(facebookCredential);
+            return 'Ok';
+          case LoginStatus.cancelled:
+            //print('Cancelado');
+            return 'Cancelado';
+          case LoginStatus.failed:
+            //print('Falló');
+            return 'Ok';
+          default:
+            return 'Error';
+        }
+      } catch (e) {
+        return 'Error: $e';
       }
-    } catch (e) {
-      return null;
     }
   }
 

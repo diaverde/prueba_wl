@@ -44,7 +44,8 @@ class HomePage extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop(true);
               Navigator.of(context).popUntil((route) => route.isFirst);
-              resetVariables(context);
+              LogoutFunctions.logoutFB();
+              LogoutFunctions.resetVariables(context);
             },
             child: const Text('Sí'),
           ),

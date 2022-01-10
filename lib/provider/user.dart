@@ -87,8 +87,8 @@ class UserModel extends ChangeNotifier {
         }
         break;
       case AuthenticationMethod.facebook:
-        final resultG = await Authentication.signInWithFacebook();
-        if (resultG != null) {
+        final resultF = await Authentication.signInWithFacebook();
+        if (resultF == 'Ok') {
           result = true;
         }
         break;

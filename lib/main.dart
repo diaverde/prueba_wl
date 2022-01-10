@@ -2,6 +2,8 @@
 // -------Base de aplicación y manejo de rutas---------
 // ----------------------------------------------------
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -23,9 +25,11 @@ import 'package:prueba_wl/provider/user.dart';
 Future<void> main() async {
   // Cargar archivo de configuración
   WidgetsFlutterBinding.ensureInitialized();
-  if (Firebase.apps.isEmpty) {
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+  } else {
     await Firebase.initializeApp(
-      name: "PruebaWL",
+      //name: "PruebaWL",
       options: const FirebaseOptions(
         apiKey: Config.apiKeyFB,
         appId: Config.appIdFB,

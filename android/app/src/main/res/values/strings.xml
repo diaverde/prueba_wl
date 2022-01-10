@@ -3,4 +3,5 @@
     <string name="app_name">Firebase Facebook Auth</string>
     <string name="facebook_app_id">646294966639489</string>
     <string name="fb_login_protocol_scheme">fb646294966639489</string>
+    <string name="facebook_client_token">Facebook Client ID</string>
 </resources>

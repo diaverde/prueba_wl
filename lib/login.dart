@@ -21,16 +21,14 @@ class LoginPage extends StatelessWidget {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      Navigator.pushNamed(context, '/home');
-      return Container();
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Prueba WL'),
-        ),
-        body: LoginPageDetails(),
-      );
+      _waitAndMove(context);
     }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Prueba WL'),
+      ),
+      body: LoginPageDetails(),
+    );
   }
 }
 
@@ -301,10 +299,10 @@ class Session extends StatelessWidget {
         return const Center(child: Text('Cargando página inicial...'));
     }
   }
+}
 
-  // Método para pasar a la siguiente página tras un delay
-  Future _waitAndMove(BuildContext context) async {
-    await Future<void>.delayed(const Duration(milliseconds: 800));
-    await Navigator.pushNamed(context, '/home');
-  }
+// Método para pasar a la siguiente página tras un delay
+Future _waitAndMove(BuildContext context) async {
+  await Future<void>.delayed(const Duration(milliseconds: 800));
+  await Navigator.pushNamed(context, '/home');
 }

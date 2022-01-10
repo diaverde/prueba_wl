@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -38,7 +39,8 @@ class ApplicationBar {
                         Navigator.of(context).pop(true);
                         Navigator.of(context)
                             .popUntil((route) => route.isFirst);
-                        resetVariables(context);
+                        LogoutFunctions.logoutFB();
+                        LogoutFunctions.resetVariables(context);
                       },
                       child: const Text('Sí'),
                     ),
@@ -158,7 +160,8 @@ class UserInfoCard {
                               Navigator.of(context).pop(true);
                               Navigator.of(context)
                                   .popUntil((route) => route.isFirst);
-                              resetVariables(context);
+                              LogoutFunctions.logoutFB();
+                              LogoutFunctions.resetVariables(context);
                             },
                             child: const Text('Sí'),
                           ),
@@ -177,16 +180,27 @@ class UserInfoCard {
   }
 }
 
-/// Método para reiniciar las variables claves al cerrar sesión
-Future<void> resetVariables(BuildContext context) async {
-  // Capturar usuario
-  final user = context.read<UserModel>();
-  // Capturar modelo de Spotify
-  final spotify = context.read<SpotifyModel>();
+class LogoutFunctions {
+  /// Método para reiniciar las variables claves al cerrar sesión
+  static Future<void> resetVariables(BuildContext context) async {
+    // Capturar usuario
+    final user = context.read<UserModel>();
+    // Capturar modelo de Spotify
+    final spotify = context.read<SpotifyModel>();
 
-  await Future<void>.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
 
-  // Limpiar todos los Provider
-  user.resetAll();
-  spotify.resetAll();
+    // Limpiar todos los Provider
+    user.resetAll();
+    spotify.resetAll();
+  }
+
+// Método para salir de Firebase
+  static void logoutFB() {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      FirebaseAuth.instance.signOut();
+    }
+  }
 }
