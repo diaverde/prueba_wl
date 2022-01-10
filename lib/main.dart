@@ -23,16 +23,19 @@ import 'package:prueba_wl/provider/user.dart';
 Future<void> main() async {
   // Cargar archivo de configuración
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: Config.apiKeyFB,
-      appId: Config.appIdFB,
-      messagingSenderId: Config.messagingSenderIdFB,
-      projectId: Config.projectIdFB,
-      authDomain: Config.authDomainFB,
-    ),
-  );
-  //await Config.initialize();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp(
+      name: "PruebaWL",
+      options: const FirebaseOptions(
+        apiKey: Config.apiKeyFB,
+        appId: Config.appIdFB,
+        messagingSenderId: Config.messagingSenderIdFB,
+        projectId: Config.projectIdFB,
+        authDomain: Config.authDomainFB,
+      ),
+    );
+  }
+  await Config.initialize();
   runApp(const MyApp());
 }
 
