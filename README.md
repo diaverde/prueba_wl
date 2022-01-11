@@ -46,7 +46,7 @@ la librería _Provider_ para facilidar el manejo del estado entre pantallas.
 ## Nota importante
 El usuario debe proveer sus propias credenciales de Spotify para acceder a la
 aplicación. Estas deben incluirse en un archivo llamado "spotify_data.json" a
-almacenar en la carpeta "config". El archivo debe tener esta estructura:<br>
+almacenar en un carpeta llamada "config". El archivo debe tener esta estructura:<br>
 {
   "clientID": "\<_ID de cliente suministrado por Spotify_\>",
   "clientSecret": "\<_Secreto de cliente suministrado por Spotify_\>"
