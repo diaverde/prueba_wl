@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Clase para conexión a servicios
@@ -28,8 +29,9 @@ class Config {
       '{"data":{"nombreUsuario":"odraude1362@gmail.com","clave":"Jorgito123"}}';
 
   /// URL para login
-  static String get userLoginURL =>
-      'https://apim3w.com/api/index.php/v1/soap/LoginUsuario.json';
+  static String get userLoginURL => kIsWeb
+      ? 'https://pruebawl.azurewebsites.net/api/Redirect?'
+      : 'https://apim3w.com/api/index.php/v1/soap/LoginUsuario.json';
 
   /// URL para obtener token de Spotify
   static String get spotifyTokenURL => 'https://accounts.spotify.com/api/token';

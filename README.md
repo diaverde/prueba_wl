@@ -52,6 +52,10 @@ almacenar en un carpeta llamada "config". El archivo debe tener esta estructura:
   "clientSecret": "\<_Secreto de cliente suministrado por Spotify_\>"
 }
 
+## Extras
+Se despliega también en modo Web, accesible en este enlace:<br>
+https://agreeable-sea-0ef279b10.1.azurestaticapps.net/#/
+
 ## Datos de contacto
 Desarrollador: Andrés Sánchez<br>
 Localizado en: Bogotá, Colombia<br>
